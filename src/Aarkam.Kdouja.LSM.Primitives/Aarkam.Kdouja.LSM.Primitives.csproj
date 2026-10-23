@@ -1,0 +1,112 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+
+		<!-- Multi Target -->
+		<TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
+
+		<!-- Language -->
+		<LangVersion>preview</LangVersion>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+
+		<!-- Build -->
+		<Deterministic>true</Deterministic>
+		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+		<WarningLevel>5</WarningLevel>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+
+		<!-- Performance -->
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+		<!-- Package -->
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageOutputPath>$(SolutionDir)nuget</PackageOutputPath>
+
+		<PackageId>Aarkam.Kdouja.Primitives</PackageId>
+		<Version>1.0.0</Version>
+
+		<Authors>Aarkam Team - Kdouja LSM Primitives - Eng. Mohamed ElHelbawi</Authors>
+		<Company>AarkamIO</Company>
+
+		<Description>
+Zero-allocation, hardware-accelerated storage engine primitives engineered for modern Log-Structured Merge-Tree (LSM-Tree) architectures, embedded key-value stores, and high-throughput transactional databases.
+
+Provides the foundational low-level building blocks for the Kdouja LSM-Tree Engine:
+• Write-Ahead Logging (WAL): Monotonically increasing atomic sequence ordering, forward-only buffered streaming, and hardware-accelerated Castagnoli CRC32-C with frame masking.
+• Immutable Sorted String Tables (SSTables): Kirsch-Mitzenmacher double-hashing Bloom Filters (XxHash64), RocksDB/LevelDB-compatible prefix-shortened bytewise key comparators, and stack-allocated binary span formatters.
+• MVCC Snapshot Isolation: Lock-free snapshot visibility pinning and compaction garbage-collection pruning guards.
+• Compact Variable-Length Encoding: Zero-allocation LEB128 VarInts and ZigZag signed 32/64-bit integer codecs with canonical overlong validation.
+• High-Throughput Storage Security: Key-cached AEAD ciphers (AES-256-GCM &amp; ChaCha20-Poly1305), HKDF key derivation, and GCRA virtual-time compaction rate limiting.
+		</Description>
+
+		<PackageProjectUrl>
+			https://aarkam.io/
+		</PackageProjectUrl>
+
+		<RepositoryUrl>
+			https://github.com/melhelbawi/Aarkam.Kdouja.LSM.Primitives
+		</RepositoryUrl>
+
+		<RepositoryType>git</RepositoryType>
+
+		<PackageTags>
+			lsm;lsm-tree;storage-engine;key-value;embedded-database;wal;sstable;bloom-filter;mvcc;rocksdb;leveldb;crc32c;varint;zero-allocation;simd;database;aes-gcm
+		</PackageTags>
+
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageReleaseNotes>Initial open-source release of Aarkam Kdouja LSM Primitives.</PackageReleaseNotes>
+		<Copyright>Copyright (c) 2026 Aarkam. All rights reserved.</Copyright>
+
+		<!-- Documentation -->
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+		<!-- SourceLink -->
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+
+		<!-- Trimming / AOT -->
+		<IsTrimmable>true</IsTrimmable>
+
+	</PropertyGroup>
+
+	<!-- Latest APIs only for .NET 10 -->
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
+		<EnablePreviewFeatures>true</EnablePreviewFeatures>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Remove="nuget\**" />
+		<EmbeddedResource Remove="nuget\**" />
+		<None Remove="nuget\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\..\README.md" Pack="true" PackagePath="\" />
+		<None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="System.IO.Hashing" Version="10.0.8" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+			<_Parameter1>Kdouja.Tests.Common</_Parameter1>
+		</AssemblyAttribute>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+			<_Parameter1>Kdouja.Tests.Unit</_Parameter1>
+		</AssemblyAttribute>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+			<_Parameter1>Kdouja.Tests.Integration</_Parameter1>
+		</AssemblyAttribute>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+			<_Parameter1>Kdouja.Tests.E2E</_Parameter1>
+		</AssemblyAttribute>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+			<_Parameter1>DynamicProxyGenAssembly2</_Parameter1>
+		</AssemblyAttribute>
+	</ItemGroup>
+</Project>

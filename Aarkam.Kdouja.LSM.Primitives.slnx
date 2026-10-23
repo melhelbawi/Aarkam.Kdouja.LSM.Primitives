@@ -1,4 +1,8 @@
 <Solution>
-  <Folder Name="/src/" />
-  <Folder Name="/tests/" />
+  <Folder Name="/src/">
+    <Project Path="src/Aarkam.Kdouja.LSM.Primitives/Aarkam.Kdouja.LSM.Primitives.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="test/Aarkam.Kdouja.LSM.Primitives.Tests/Aarkam.Kdouja.LSM.Primitives.Tests.csproj" />
+  </Folder>
 </Solution>
