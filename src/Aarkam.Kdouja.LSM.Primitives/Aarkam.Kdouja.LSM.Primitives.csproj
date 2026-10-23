@@ -25,7 +25,7 @@
 		<PackageOutputPath>$(SolutionDir)nuget</PackageOutputPath>
 
 		<PackageId>Aarkam.Kdouja.Primitives</PackageId>
-		<Version>1.0.0</Version>
+		<Version>1.0.6</Version>
 
 		<Authors>Aarkam Team - Kdouja LSM Primitives - Eng. Mohamed ElHelbawi</Authors>
 		<Company>AarkamIO</Company>

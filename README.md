@@ -12,7 +12,12 @@
 [![Zero Allocation](https://img.shields.io/badge/Memory-Zero--Allocation%20%2F%20Spans-orange.svg?style=flat-square)](https://learn.microsoft.com/en-us/dotnet/api/system.span-1)
 
 <p align="center">
+  <a href="https://www.nuget.org/packages/Aarkam.Kdouja.Primitives"><strong>📦 View Package on NuGet.org</strong></a>
+</p>
+
+<p align="center">
   <a href="#overview">Overview</a> •
+  <a href="#lsm-tree-architecture">LSM Architecture</a> •
   <a href="#key-features">Key Features</a> •
   <a href="#installation">Installation</a> •
   <a href="#primitives-catalog">Primitives Catalog</a> •
@@ -27,11 +32,47 @@
 
 ## Overview
 
-**Aarkam.Kdouja.LSM.Primitives** is an ultra-high-performance suite of foundational storage primitives engineered for building log-structured merge-tree (LSM-Tree) storage engines, embedded key-value stores, transactional write-ahead logs (WAL), and distributed database storage tiers in .NET.
+**Aarkam.Kdouja.LSM.Primitives** is an ultra-high-performance suite of foundational storage primitives engineered specifically for modern **Log-Structured Merge-Tree (LSM-Tree)** architectures, embedded key-value engines, transactional write-ahead logs (WAL), and distributed database storage tiers in .NET.
 
-Originating as the low-level foundation of the **Kdouja LSM-Tree Engine** by [Aarkam](https://aarkam.io/), this library provides bare-metal memory structures, SIMD-accelerated checksums, authenticated AEAD cryptographic engines, atomic multi-version concurrency control (MVCC) structures, variable-length integer codecs, and I/O rate-limiters.
+Published as the official NuGet package [`Aarkam.Kdouja.Primitives`](https://www.nuget.org/packages/Aarkam.Kdouja.Primitives) and authored by **Eng. Mohamed ElHelbawi** and the **Aarkam Team**, this library serves as the bare-metal storage foundation of the **Kdouja LSM-Tree Storage Engine** ([aarkam.io](https://aarkam.io/)).
 
-Every component is architected with a strict **zero-heap-allocation** philosophy, utilizing `Span<byte>`, `ReadOnlySpan<byte>`, `ref struct` formatters, hardware intrinsics (SSE4.2, ARMv8, AVX2, AVX-512), and modern .NET inline arrays.
+Every primitive is crafted with an uncompromising **zero-heap-allocation** discipline, utilizing `Span<byte>`, `ReadOnlySpan<byte>`, stack-bound `ref struct` formatters, hardware intrinsics (`SSE4.2`, `ARMv8`, `AVX2`, `AVX-512`), and modern C# inline arrays.
+
+---
+
+## LSM-Tree Architecture
+
+The diagram below illustrates how each primitive in `Aarkam.Kdouja.LSM.Primitives` maps directly to the hot execution paths of an LSM-Tree storage engine:
+
+```mermaid
+flowchart TD
+    subgraph WritePath["1. Write Hot Path (WAL & MemTable)"]
+        Write["Write Operation (Put / Delete)"] --> Seq["SequenceNumber.Increment()"]
+        Seq --> WAL["Write-Ahead Log (WAL)"]
+        WAL --> CRC["Crc32Algorithm (SSE4.2/ARMv8 + Masking)"]
+        WAL --> SeqWriter["SequentialFileWriter (64KB Staging & Bypass)"]
+        Seq --> MemTable["MemTable (In-Memory Key Index)"]
+    end
+
+    subgraph FlushCompaction["2. Flush & Background Compaction Tier"]
+        MemTable --> Flush["MemTable Flush / Level Compactor"]
+        Flush --> RateLimiter["TokenBucketRateLimiter (GCRA Virtual-Time)"]
+        RateLimiter --> Bloom["BloomFilter (XxHash64 Double Hashing)"]
+        Bloom --> KeyComp["DefaultKeyComparator (Shortest Separator)"]
+        KeyComp --> VarInt["VarIntEncoder (LEB128 & ZigZag)"]
+        VarInt --> Encrypt["IAeadEncryptor (AES-256-GCM / ChaCha20)"]
+        Encrypt --> SST["Immutable Sorted String Table (SSTable)"]
+    end
+
+    subgraph ReadPath["3. Point-in-Time Read & MVCC Tier"]
+        Read["Read Query (Get / Scan)"] --> MVCC["ReadWriteVersionGuard.Acquire()"]
+        MVCC --> BFProbe{"BloomFilter.Contains()"}
+        BFProbe -- "Negative" --> Miss["Instant Return (Zero Disk I/O)"]
+        BFProbe -- "Positive" --> SSTRead["SSTable Block Read"]
+        SSTRead --> Decrypt["IAeadEncryptor.Decrypt()"]
+        Decrypt --> BinaryReader["BinarySpanReader (Stack-Bound Zero-Alloc)"]
+    end
+```
 
 ---
 
@@ -63,22 +104,26 @@ Every component is architected with a strict **zero-heap-allocation** philosophy
 
 ## Installation
 
-Install the package via the .NET CLI:
+The package is available on **[NuGet.org](https://www.nuget.org/packages/Aarkam.Kdouja.Primitives)** under the package identifier `Aarkam.Kdouja.Primitives`:
 
+### .NET CLI
 ```bash
 dotnet add package Aarkam.Kdouja.Primitives
 ```
 
-Or using the Package Manager Console in Visual Studio:
-
+### Visual Studio Package Manager Console
 ```powershell
 Install-Package Aarkam.Kdouja.Primitives
 ```
 
-Or add it directly to your `.csproj`:
-
+### PackageReference
 ```xml
 <PackageReference Include="Aarkam.Kdouja.Primitives" Version="1.0.0" />
+```
+
+### Paket CLI
+```bash
+paket add Aarkam.Kdouja.Primitives
 ```
 
 ---
@@ -416,6 +461,13 @@ Contributions, feedback, and pull requests are warmly welcome!
 5. Open a Pull Request.
 
 Please ensure all tests pass and any new primitive maintains zero-heap-allocation semantics.
+
+---
+
+## Authors & Maintainers
+
+- **Eng. Mohamed ElHelbawi** ([@melhelbawi](https://github.com/melhelbawi))
+- **Aarkam Team** ([aarkam.io](https://aarkam.io/))
 
 ---
 
